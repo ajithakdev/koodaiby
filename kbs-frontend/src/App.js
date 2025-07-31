@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ShoppingCart, Menu, Plus, Upload, Eye, Trash2, X } from 'lucide-react';
+import { ShoppingCart, Menu, Plus, Trash2, X } from 'lucide-react';
 import apiService from './utils/api';
 import { sendOrderToWhatsApp, sendPinToWhatsApp, validatePhoneNumber } from './utils/whatsapp';
 import { saveCartToStorage, loadCartFromStorage, clearCartFromStorage } from './utils/storage';
@@ -11,11 +11,9 @@ const KBSShoppingWebsite = () => {
   const [showAddItem, setShowAddItem] = useState(false);
   const [showPinEntry, setShowPinEntry] = useState(false);
   const [pin, setPin] = useState('');
-  const [generatedPin, setGeneratedPin] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
   const [showCart, setShowCart] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
   const [adminPhone, setAdminPhone] = useState('');
 
   // Load items from backend and cart from localStorage
@@ -32,7 +30,7 @@ const KBSShoppingWebsite = () => {
         setCart(savedCart);
       } catch (error) {
         console.error('Failed to load items:', error);
-        setError('Failed to load items. Using sample data.');
+        console.log('Failed to load items. Using sample data.');
         
         // Fallback to sample items if backend is not available
         const sampleItems = [
@@ -113,7 +111,7 @@ const KBSShoppingWebsite = () => {
       }
       
       const response = await apiService.generatePin(validPhone);
-      setGeneratedPin(response.pin); // Remove this in production
+      // PIN is generated and sent via WhatsApp
       
       // Send PIN via WhatsApp (in production, this would be handled by backend)
       sendPinToWhatsApp(response.pin, validPhone);
