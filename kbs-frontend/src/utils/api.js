@@ -16,17 +16,28 @@ class ApiService {
       ...options,
     };
 
+    console.log('🔗 API Request:', { url, method: config.method || 'GET' });
+
     try {
       const response = await fetch(url, config);
       
+      console.log('📡 API Response:', { 
+        status: response.status, 
+        statusText: response.statusText,
+        url: response.url 
+      });
+      
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
+        console.error('❌ API Error Response:', errorData);
         throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
       }
 
-      return await response.json();
+      const data = await response.json();
+      console.log('✅ API Success:', data);
+      return data;
     } catch (error) {
-      console.error('API request failed:', error);
+      console.error('💥 API request failed:', error);
       throw error;
     }
   }

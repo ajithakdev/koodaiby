@@ -104,22 +104,27 @@ const KBSShoppingWebsite = () => {
   const generatePin = async (phone) => {
     try {
       setLoading(true);
+      console.log('🔢 Generating PIN for phone:', phone);
+      
       const validPhone = validatePhoneNumber(phone);
+      console.log('📱 Validated phone:', validPhone);
+      
       if (!validPhone) {
         alert('Please enter a valid phone number');
         return;
       }
       
+      console.log('🚀 Calling API to generate PIN...');
       const response = await apiService.generatePin(validPhone);
-      // PIN is generated and sent via WhatsApp
+      console.log('✅ PIN generated successfully:', response);
       
       // Send PIN via WhatsApp (in production, this would be handled by backend)
       sendPinToWhatsApp(response.pin, validPhone);
       
       alert(`PIN sent to WhatsApp: ${response.pin}`); // Remove this in production
     } catch (error) {
-      console.error('Failed to generate PIN:', error);
-      alert('Failed to generate PIN. Please try again.');
+      console.error('❌ Failed to generate PIN:', error);
+      alert(`Failed to generate PIN: ${error.message}`);
     } finally {
       setLoading(false);
     }
