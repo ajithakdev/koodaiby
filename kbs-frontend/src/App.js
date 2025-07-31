@@ -121,7 +121,8 @@ const KBSShoppingWebsite = () => {
       // Send PIN via WhatsApp (in production, this would be handled by backend)
       sendPinToWhatsApp(response.pin, validPhone);
       
-      alert(`PIN sent to WhatsApp: ${response.pin}`); // Remove this in production
+      // Show user-friendly message without revealing the PIN
+      alert(`🔐 Verification PIN has been sent to your WhatsApp!\n\nPlease check your WhatsApp and enter the 6-digit PIN below.`);
     } catch (error) {
       console.error('❌ Failed to generate PIN:', error);
       alert(`Failed to generate PIN: ${error.message}`);

@@ -255,13 +255,16 @@ app.post('/api/generate-pin', async (req, res) => {
     
     // In a real application, you would send this PIN via WhatsApp API
     // For now, we'll return it in the response (remove this in production)
-    res.json({ 
+    const response = { 
       message: 'PIN generated successfully',
       pin: pin, // Remove this line in production
       phone: phone
-    });
+    };
+    
+    console.log('✅ Sending response:', response);
+    res.json(response);
   } catch (error) {
-    console.error('Error generating PIN:', error);
+    console.error('❌ Error generating PIN:', error);
     res.status(500).json({ error: error.message });
   }
 });

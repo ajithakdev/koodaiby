@@ -3,26 +3,56 @@ const WHATSAPP_NUMBER = process.env.REACT_APP_WHATSAPP_NUMBER || '919123536601';
 
 export const formatCartForWhatsApp = (cart, customerInfo = {}) => {
   const cartDetails = cart.map(item => 
-    `${item.name} x${item.quantity} - ₹${(item.price * item.quantity).toLocaleString()}`
-  ).join('\n');
+    `┃ ${item.name}\n┃ Qty: ${item.quantity} × ₹${item.price.toLocaleString()} = *₹${(item.price * item.quantity).toLocaleString()}*`
+  ).join('\n┃\n');
   
   const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const orderDate = new Date().toLocaleDateString('en-IN', { 
+    day: 'numeric', 
+    month: 'short', 
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
   
-  let message = `*🛒 KBS Store Order*\n\n`;
+  let message = `╔═══════════════════════╗\n`;
+  message += `║    🛍️ *KBS STORE* 🛍️    ║\n`;
+  message += `║   Premium Collection   ║\n`;
+  message += `╚═══════════════════════╝\n\n`;
+  
+  message += `📅 *Order Date:* ${orderDate}\n`;
+  message += `🆔 *Order ID:* #KBS${Date.now().toString().slice(-6)}\n\n`;
   
   if (customerInfo.name) {
-    message += `*Customer:* ${customerInfo.name}\n`;
+    message += `👤 *Customer Details*\n`;
+    message += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+    message += `📝 Name: *${customerInfo.name}*\n`;
   }
   if (customerInfo.phone) {
-    message += `*Phone:* ${customerInfo.phone}\n`;
+    message += `📱 Phone: *${customerInfo.phone}*\n`;
   }
   if (customerInfo.address) {
-    message += `*Address:* ${customerInfo.address}\n`;
+    message += `📍 Address: *${customerInfo.address}*\n`;
   }
   
-  message += `\n*📦 Order Details:*\n${cartDetails}\n\n`;
-  message += `*💰 Total Amount: ₹${total.toLocaleString()}*\n\n`;
-  message += `Please confirm your order and provide delivery details if needed.`;
+  message += `\n🛒 *Order Summary*\n`;
+  message += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+  message += `${cartDetails}\n\n`;
+  
+  message += `💳 *Payment Summary*\n`;
+  message += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+  message += `💰 Subtotal: ₹${total.toLocaleString()}\n`;
+  message += `🚚 Delivery: *FREE*\n`;
+  message += `🎯 *TOTAL: ₹${total.toLocaleString()}*\n\n`;
+  
+  message += `✨ *Next Steps:*\n`;
+  message += `• We'll confirm your order shortly\n`;
+  message += `• Share your delivery address\n`;
+  message += `• Payment on delivery available\n\n`;
+  
+  message += `📞 *Need Help?* Reply to this message\n`;
+  message += `🌟 Thank you for choosing KBS Store!\n\n`;
+  message += `_Powered by KBS Store - Your Premium Shopping Destination_ 🛍️`;
   
   return message;
 };
@@ -41,7 +71,33 @@ export const sendOrderToWhatsApp = (cart, customerInfo = {}) => {
 };
 
 export const sendPinToWhatsApp = (pin, phoneNumber) => {
-  const message = `*🔐 KBS Store Admin PIN*\n\nYour verification PIN is: *${pin}*\n\nThis PIN will expire in 5 minutes.\n\nDo not share this PIN with anyone.`;
+  const timestamp = new Date().toLocaleTimeString('en-IN', { 
+    hour: '2-digit', 
+    minute: '2-digit',
+    hour12: true 
+  });
+  
+  let message = `╔═══════════════════════╗\n`;
+  message += `║    🔐 *KBS STORE* 🔐    ║\n`;
+  message += `║   Admin Verification   ║\n`;
+  message += `╚═══════════════════════╝\n\n`;
+  
+  message += `🕐 *Time:* ${timestamp}\n`;
+  message += `🔑 *Your Verification PIN:*\n\n`;
+  message += `┌─────────────────────┐\n`;
+  message += `│      *${pin}*      │\n`;
+  message += `└─────────────────────┘\n\n`;
+  
+  message += `⚠️ *Important:*\n`;
+  message += `• PIN expires in 5 minutes\n`;
+  message += `• Do not share with anyone\n`;
+  message += `• Use only for admin access\n\n`;
+  
+  message += `🛡️ *Security Notice:*\n`;
+  message += `If you didn't request this PIN, please ignore this message.\n\n`;
+  
+  message += `_KBS Store Security Team_ 🔒`;
+  
   sendWhatsAppMessage(message, phoneNumber);
 };
 
