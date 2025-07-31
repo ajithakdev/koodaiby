@@ -68,7 +68,12 @@ const pinSchema = new mongoose.Schema({
   phone: { type: String, required: true },
   pin: { type: String, required: true },
   verified: { type: Boolean, default: false },
-  expiresAt: { type: Date, default: Date.now, expires: 300 } // 5 minutes
+  expiresAt: { 
+    type: Date, 
+    default: () => new Date(Date.now() + 5 * 60 * 1000), // 5 minutes from now
+    expires: 0 // Let MongoDB handle expiration based on expiresAt field
+  },
+  createdAt: { type: Date, default: Date.now }
 });
 
 const Pin = mongoose.model('Pin', pinSchema);
@@ -112,6 +117,24 @@ app.get('/api/health', (req, res) => {
     message: 'KBS Backend API is running',
     timestamp: new Date().toISOString()
   });
+});
+
+// Debug endpoint to check PIN collection
+app.get('/api/debug/pins', async (req, res) => {
+  try {
+    const pins = await Pin.find({}).select('phone pin verified expiresAt createdAt');
+    const count = await Pin.countDocuments();
+    
+    res.json({
+      count: count,
+      pins: pins,
+      collectionName: Pin.collection.name,
+      dbName: mongoose.connection.db.databaseName
+    });
+  } catch (error) {
+    console.error('Error fetching pins:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // Get all items with optional filtering
@@ -236,22 +259,39 @@ app.delete('/api/items/:id', async (req, res) => {
 
 // Generate PIN for WhatsApp verification
 app.post('/api/generate-pin', async (req, res) => {
+  console.log('🔢 POST /api/generate-pin called');
+  console.log('📱 Request body:', req.body);
+  
   try {
     const { phone } = req.body;
     
     if (!phone) {
+      console.log('❌ No phone number provided');
       return res.status(400).json({ error: 'Phone number is required' });
     }
     
+    console.log('📞 Generating PIN for phone:', phone);
+    
     // Generate 6-digit PIN
     const pin = Math.floor(100000 + Math.random() * 900000).toString();
+    console.log('🔐 Generated PIN:', pin);
     
     // Save PIN to database
-    await Pin.findOneAndUpdate(
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes from now
+    const savedPin = await Pin.findOneAndUpdate(
       { phone },
-      { phone, pin, verified: false },
+      { 
+        phone, 
+        pin, 
+        verified: false, 
+        expiresAt: expiresAt,
+        createdAt: new Date()
+      },
       { upsert: true, new: true }
     );
+    
+    console.log('💾 PIN saved to database:', savedPin);
+    console.log('📊 PIN collection count:', await Pin.countDocuments());
     
     // In a real application, you would send this PIN via WhatsApp API
     // For now, we'll return it in the response (remove this in production)
@@ -272,15 +312,25 @@ app.post('/api/generate-pin', async (req, res) => {
 // Verify PIN
 app.post('/api/verify-pin', async (req, res) => {
   try {
+    console.log('🔍 POST /api/verify-pin called');
+    console.log('📱 Request body:', req.body);
+    
     const { phone, pin } = req.body;
     
     if (!phone || !pin) {
+      console.log('❌ Missing phone or PIN');
       return res.status(400).json({ error: 'Phone number and PIN are required' });
     }
     
+    console.log('🔍 Searching for PIN record...');
+    console.log('📊 Total PIN records in DB:', await Pin.countDocuments());
+    console.log('🔍 All PIN records:', await Pin.find({}).select('phone pin verified expiresAt'));
+    
     const pinRecord = await Pin.findOne({ phone, pin });
+    console.log('📋 Found PIN record:', pinRecord);
     
     if (!pinRecord) {
+      console.log('❌ PIN record not found');
       return res.status(400).json({ error: 'Invalid PIN or phone number' });
     }
     
