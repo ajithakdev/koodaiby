@@ -75,6 +75,36 @@ const Pin = mongoose.model('Pin', pinSchema);
 
 // Routes
 
+// Root route for testing
+app.get('/', (req, res) => {
+  res.json({ 
+    message: 'KBS Backend API is running',
+    version: '1.0.0',
+    endpoints: [
+      'GET /api/health',
+      'GET /api/items',
+      'POST /api/items',
+      'POST /api/generate-pin',
+      'POST /api/verify-pin'
+    ]
+  });
+});
+
+// API root route
+app.get('/api', (req, res) => {
+  res.json({ 
+    message: 'KBS Backend API is running',
+    version: '1.0.0',
+    endpoints: [
+      'GET /api/health',
+      'GET /api/items',
+      'POST /api/items',
+      'POST /api/generate-pin',
+      'POST /api/verify-pin'
+    ]
+  });
+});
+
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ 
@@ -273,7 +303,20 @@ app.use((err, req, res, next) => {
 
 // 404 handler
 app.use('*', (req, res) => {
-  res.status(404).json({ error: 'Route not found' });
+  console.log(`❌ 404 - Route not found: ${req.method} ${req.originalUrl}`);
+  res.status(404).json({ 
+    error: 'Route not found',
+    method: req.method,
+    path: req.originalUrl,
+    availableRoutes: [
+      'GET /',
+      'GET /api/health',
+      'GET /api/items',
+      'POST /api/items',
+      'POST /api/generate-pin',
+      'POST /api/verify-pin'
+    ]
+  });
 });
 
 const PORT = process.env.PORT || 5000;
